@@ -1,0 +1,295 @@
+/*{
+  "ISFVSN": "2",
+  "CREDIT": "Custom Wire effect",
+  "DESCRIPTION": "Water-like radial ripples triggered by bass kicks. Every impact retains its own sampled strength.",
+  "CATEGORIES": [
+    "Distortion"
+  ],
+  "INPUTS": [
+    {
+      "NAME": "inputImage",
+      "LABEL": "Video",
+      "TYPE": "image"
+    },
+    {
+      "NAME": "amount",
+      "LABEL": "Altura maxima",
+      "TYPE": "float",
+      "DEFAULT": 0.025,
+      "MIN": 0,
+      "MAX": 0.07
+    },
+    {
+      "NAME": "width",
+      "LABEL": "Ancho de onda",
+      "TYPE": "float",
+      "DEFAULT": 0.035,
+      "MIN": 0.012,
+      "MAX": 0.1
+    },
+    {
+      "NAME": "baseSpeed",
+      "LABEL": "Velocidad base",
+      "TYPE": "float",
+      "DEFAULT": 0.5,
+      "MIN": 0.15,
+      "MAX": 1.5
+    },
+    {
+      "NAME": "speedResponse",
+      "LABEL": "Respuesta velocidad",
+      "TYPE": "float",
+      "DEFAULT": 0,
+      "MIN": 0,
+      "MAX": 2
+    },
+    {
+      "NAME": "inward",
+      "LABEL": "Hacia adentro",
+      "TYPE": "bool",
+      "DEFAULT": false
+    },
+    {
+      "NAME": "centerX",
+      "LABEL": "Centro X",
+      "TYPE": "float",
+      "DEFAULT": 0.5,
+      "MIN": 0,
+      "MAX": 1
+    },
+    {
+      "NAME": "centerY",
+      "LABEL": "Centro Y",
+      "TYPE": "float",
+      "DEFAULT": 0.5,
+      "MIN": 0,
+      "MAX": 1
+    },
+    {
+      "NAME": "decay",
+      "LABEL": "Decaimiento",
+      "TYPE": "float",
+      "DEFAULT": 1,
+      "MIN": 0.2,
+      "MAX": 3
+    },
+    {
+      "NAME": "progress0",
+      "LABEL": "Edad 1",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "strength0",
+      "LABEL": "Fuerza 1",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "progress1",
+      "LABEL": "Edad 2",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "strength1",
+      "LABEL": "Fuerza 2",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "progress2",
+      "LABEL": "Edad 3",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "strength2",
+      "LABEL": "Fuerza 3",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "progress3",
+      "LABEL": "Edad 4",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "strength3",
+      "LABEL": "Fuerza 4",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "progress4",
+      "LABEL": "Edad 5",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "strength4",
+      "LABEL": "Fuerza 5",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "progress5",
+      "LABEL": "Edad 6",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "strength5",
+      "LABEL": "Fuerza 6",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "progress6",
+      "LABEL": "Edad 7",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "strength6",
+      "LABEL": "Fuerza 7",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "progress7",
+      "LABEL": "Edad 8",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "strength7",
+      "LABEL": "Fuerza 8",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "diagEnergy",
+      "LABEL": "Diag energia",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "diagReference",
+      "LABEL": "Diag referencia",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "diagTransient",
+      "LABEL": "Diag transitorio",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "diagThreshold",
+      "LABEL": "Diag umbral",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "diagDetected",
+      "LABEL": "Diag detectado",
+      "TYPE": "bool",
+      "DEFAULT": false
+    },
+    {
+      "NAME": "diagCount",
+      "LABEL": "Diag contador",
+      "TYPE": "float",
+      "DEFAULT": 0
+    },
+    {
+      "NAME": "showDiagnostics",
+      "LABEL": "Mostrar diagnostico",
+      "TYPE": "bool",
+      "DEFAULT": false
+    }
+  ]
+}*/
+
+float ripple(float r, float p, float strength, float reach) {
+    if (p <= 0.000001 || p >= 0.99999) return 0.0;
+    // Manual trigger in silence uses a medium force. Real hits exceed the threshold.
+    float energy = strength < 0.0001 ? 0.65 : clamp(strength,0.0,1.0);
+    // A real water wave changes amplitude much more than propagation speed.
+    float speed = max(baseSpeed,0.2) * (1.0 + energy * max(speedResponse,0.0) * 0.35);
+    float travel = (p * 8.0) * speed / max(reach,0.001);
+    if (travel >= 1.0) return 0.0;
+    float front = (inward ? 1.0-travel : travel) * reach;
+    float waveWidth = max(width,0.005);
+
+    // Several damped rings follow the main front, like a drop falling into a puddle.
+    // "behind" is positive on the wake side for either direction of travel.
+    float behind = (inward ? r-front : front-r) / waveWidth;
+    float wakeGate = smoothstep(-0.65,0.15,behind);
+    // Outside the wake the ring is exactly zero; beyond 12 widths its
+    // maximum contribution is below 1e-10. Avoid exp/sin on those pixels.
+    float rings = 0.0;
+    if (wakeGate > 0.0 && behind < 12.0) {
+        float envelope = exp(-0.16*behind*behind) * wakeGate;
+        rings = sin(behind*4.35 + 0.55) * envelope;
+    }
+
+    // A short central dimple makes the beginning read as an impact instead of a wipe.
+    float impact = 0.0;
+    if (!inward) {
+        float centerDistance = r / (waveWidth*1.15);
+        impact = -exp(-centerDistance*centerDistance) * exp(-travel*22.0) * 0.85;
+    }
+
+    float life = smoothstep(0.0,0.02,travel) * (1.0-smoothstep(0.82,1.0,travel));
+    // Exponent > 1 preserves and emphasizes the contrast between soft and hard kicks.
+    float height = pow(energy,1.25) * exp(-travel*max(decay,0.0));
+    return (rings + impact) * life * height;
+}
+void main(){
+    vec2 uv = isf_FragNormCoord.xy;
+    if (amount <= 0.0 && !showDiagnostics) {
+        gl_FragColor=IMG_NORM_PIXEL(inputImage,uv);
+        return;
+    }
+    float aspect=RENDERSIZE.x/max(RENDERSIZE.y,1.0);
+    vec2 center=vec2(centerX,centerY);
+    vec2 delta=(uv-center)*vec2(aspect,1.0);
+    float radius=length(delta);
+    float reach=length(max(center,1.0-center)*vec2(aspect,1.0)) + width*2.0;
+    float sum=0.0;
+    sum += ripple(radius,progress0,strength0,reach);
+    sum += ripple(radius,progress1,strength1,reach);
+    sum += ripple(radius,progress2,strength2,reach);
+    sum += ripple(radius,progress3,strength3,reach);
+    sum += ripple(radius,progress4,strength4,reach);
+    sum += ripple(radius,progress5,strength5,reach);
+    sum += ripple(radius,progress6,strength6,reach);
+    sum += ripple(radius,progress7,strength7,reach);
+    float limitedSum = sum / (1.0 + 0.55 * abs(sum));
+    float displacement=amount*clamp(limitedSum,-1.35,1.35)*smoothstep(0.0,0.025,radius);
+    vec2 warped=uv+(delta/max(radius,0.00001))*displacement/vec2(aspect,1.0);
+    warped=1.0-abs(mod(warped,2.0)-1.0);
+    vec4 color=IMG_NORM_PIXEL(inputImage,warped);
+    if (showDiagnostics && uv.x < 0.34 && uv.y > 0.79) {
+        vec2 panel = vec2(uv.x / 0.34, (uv.y - 0.79) / 0.21);
+        float row = floor(panel.y * 5.0);
+        float localY = fract(panel.y * 5.0);
+        float value = row < 1.0 ? clamp(diagEnergy,0.0,1.0) :
+                      row < 2.0 ? clamp(diagReference,0.0,1.0) :
+                      row < 3.0 ? clamp(diagTransient*4.0,0.0,1.0) :
+                      row < 4.0 ? clamp(diagThreshold*4.0,0.0,1.0) : fract(diagCount/10.0);
+        vec3 barColor = row < 1.0 ? vec3(0.15,0.65,1.0) :
+                        row < 2.0 ? vec3(0.65,0.35,1.0) :
+                        row < 3.0 ? vec3(0.15,1.0,0.45) :
+                        row < 4.0 ? vec3(1.0,0.55,0.12) : vec3(0.95);
+        float insideBar = step(panel.x, value) * step(0.16,localY) * step(localY,0.84);
+        vec3 hud = mix(vec3(0.025), barColor, insideBar);
+        if (diagDetected && panel.x > 0.93) hud = vec3(0.1,1.0,0.25);
+        color.rgb = mix(color.rgb, hud, 0.88);
+    }
+    gl_FragColor=color;
+}

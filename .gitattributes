@@ -1,0 +1,6 @@
+*.cwired binary
+*.wire text eol=lf
+*.isf text eol=lf
+*.mjs text eol=lf
+*.md text eol=lf
+

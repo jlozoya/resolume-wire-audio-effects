@@ -1,0 +1,33 @@
+/*{
+  "ISFVSN": "2",
+  "DESCRIPTION": "Separable Gaussian for the analysis map only",
+  "INPUTS": [
+    {
+      "NAME": "inputImage",
+      "TYPE": "image"
+    },
+    {
+      "NAME": "horizontal",
+      "TYPE": "bool",
+      "DEFAULT": true
+    },
+    {
+      "NAME": "smoothness",
+      "TYPE": "float",
+      "DEFAULT": 3.5
+    }
+  ]
+}*/
+vec2 reflectUV(vec2 p){return 1.0-abs(mod(p,2.0)-1.0);}
+void main(){
+ vec2 uv=isf_FragNormCoord.xy;
+ // Analysis only, at half patch resolution. Separable five-tap Gaussian.
+ vec2 axis=horizontal?vec2(1,0):vec2(0,1);
+ vec2 stepUV=axis*smoothness/max(RENDERSIZE,vec2(1));
+ vec4 c=IMG_NORM_PIXEL(inputImage,uv)*.2270270270;
+ c+=(IMG_NORM_PIXEL(inputImage,reflectUV(uv+stepUV*1.3846153846))+
+     IMG_NORM_PIXEL(inputImage,reflectUV(uv-stepUV*1.3846153846)))*.3162162162;
+ c+=(IMG_NORM_PIXEL(inputImage,reflectUV(uv+stepUV*3.2307692308))+
+     IMG_NORM_PIXEL(inputImage,reflectUV(uv-stepUV*3.2307692308)))*.0702702703;
+ gl_FragColor=c;
+}
