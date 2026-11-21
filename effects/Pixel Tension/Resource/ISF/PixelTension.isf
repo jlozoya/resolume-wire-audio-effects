@@ -1,0 +1,62 @@
+/*{
+  "ISFVSN": "2",
+  "CREDIT": "Fereachlv",
+  "DESCRIPTION": "Audio-reactive pixel art for sustained musical buildups.",
+  "CATEGORIES": ["Stylize"],
+  "INPUTS": [
+    {"NAME":"inputImage", "LABEL":"Video", "TYPE":"image"},
+    {"NAME":"sectionLevel", "LABEL":"Nivel del tramo", "TYPE":"float", "DEFAULT":0},
+    {"NAME":"baselineLevel", "LABEL":"Referencia lenta", "TYPE":"float", "DEFAULT":0},
+    {"NAME":"peakLevel", "LABEL":"Nivel del golpe", "TYPE":"float", "DEFAULT":0},
+    {"NAME":"amount", "LABEL":"Cantidad", "TYPE":"float", "DEFAULT":1, "MIN":0, "MAX":1},
+    {"NAME":"pixelRows", "LABEL":"Filas de píxeles", "TYPE":"float", "DEFAULT":120, "MIN":28, "MAX":360},
+    {"NAME":"colorSteps", "LABEL":"Niveles de color", "TYPE":"float", "DEFAULT":8, "MIN":3, "MAX":32},
+    {"NAME":"ditherAmount", "LABEL":"Tramado", "TYPE":"float", "DEFAULT":0.65, "MIN":0, "MAX":1},
+    {"NAME":"sensitivity", "LABEL":"Sensibilidad", "TYPE":"float", "DEFAULT":18, "MIN":1, "MAX":80},
+    {"NAME":"dropThreshold", "LABEL":"Umbral del golpe", "TYPE":"float", "DEFAULT":0.60, "MIN":0.15, "MAX":1},
+    {"NAME":"manual", "LABEL":"Prueba manual", "TYPE":"float", "DEFAULT":0, "MIN":0, "MAX":1}
+  ]
+}*/
+
+float audioEnergy(float level) {
+    float scaled = max(level * sensitivity, 0.0);
+    return scaled / (1.0 + scaled);
+}
+
+float tension() {
+    float section = audioEnergy(sectionLevel);
+    float baseline = audioEnergy(baselineLevel);
+    float peak = audioEnergy(peakLevel);
+    // Keep gentle builds visible as the slow reference catches up.
+    float audible = smoothstep(0.018, 0.065, section);
+    float rising = smoothstep(0.004, 0.035, section - baseline);
+    float belowDrop = 1.0 - smoothstep(dropThreshold * 0.86, dropThreshold, max(section, peak));
+    return audible * rising * belowDrop;
+}
+
+void main() {
+    vec2 uv = isf_FragNormCoord;
+    vec4 original = IMG_NORM_PIXEL(inputImage, uv);
+    float strength = clamp(amount * max(manual, tension()), 0.0, 1.0);
+    if (strength <= 0.0001) {
+        gl_FragColor = original;
+        return;
+    }
+
+    vec2 size = max(RENDERSIZE, vec2(1.0));
+    float blockSize = max(1.0, floor(size.y / pixelRows + 0.5));
+    vec2 pos = min(uv * size, size - 0.5);
+    vec2 cell = floor(pos / blockSize);
+    vec2 start = cell * blockSize;
+    vec2 end = min(start + vec2(blockSize), size);
+    vec4 block = IMG_NORM_PIXEL(inputImage, (start + end) * 0.5 / size);
+
+    // Resolve averages in straight RGB and return premultiplied RGBA.
+    vec3 rgb = clamp(block.rgb / max(block.a, 0.00001), 0.0, 1.0);
+    vec2 parity = mod(cell, 2.0);
+    float bayer = mix(2.0 * parity.x, 3.0 - 2.0 * parity.x, parity.y);
+    float offset = ((bayer + 0.5) / 4.0 - 0.5) * ditherAmount;
+    float levels = floor(colorSteps + 0.5) - 1.0;
+    vec3 quantized = clamp(floor(rgb * levels + 0.5 + offset) / levels, 0.0, 1.0);
+    gl_FragColor = mix(original, vec4(quantized * block.a, block.a), strength);
+}

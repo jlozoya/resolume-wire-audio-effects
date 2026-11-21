@@ -1,23 +1,24 @@
 # Efectos de audio para Resolume Wire
 
-Dos efectos audiovisuales reactivos al audio, creados por **Fereachlv** y validados con Resolume Wire 7.22.5:
+Efectos audiovisuales reactivos al audio, creados por **Fereachlv** y validados con Resolume Wire 7.22.5:
 
 - **Visión Psicodélica**: distorsión psicodélica con movimiento automático o por sonido, respuesta suavizada, inversión gradual durante pausas y detección adaptativa de graves.
 - **Ondas de Agua**: genera hasta ocho ondas de agua independientes a partir de ataques de kick o de un disparo manual.
+- **Pixel Tension**: convierte el video en pixel art durante subidas de energía musical. La pixelación también responde a subidas suaves, se sostiene durante el tramo y cede al entrar el golpe. [Guía](effects/Pixel%20Tension/LEEME.md) · [Descargar `.cwired`](effects/Pixel%20Tension/Pixel%20Tension.cwired?raw=true)
 
-Los archivos `.wire` son editables. Los `.cwired` de la sección [Releases](https://github.com/jlozoya/resolume-wire-audio-effects/releases) están compilados y listos para instalar.
+Los archivos `.wire` son editables. Los `.cwired` en [`effects/`](effects/) y en [Releases](https://github.com/jlozoya/resolume-wire-audio-effects/releases) están compilados y listos para instalar.
 
 ## Requisitos
 
 - Resolume Arena o Avenue compatible con efectos compilados por Wire 7.22.5.
 - Resolume Wire 7.22.5 para abrir, modificar o volver a compilar los proyectos.
-- Una entrada de audio configurada en Resolume para usar la detección automática de kicks.
+- Una fuente de audio configurada en Resolume para usar la respuesta automática.
 
 ## Instalación rápida
 
-1. Descarga los dos archivos `.cwired` de la release más reciente.
+1. Descarga el `.cwired` del efecto que quieras usar.
 2. En Arena o Avenue, abre **Sources > Effects** y usa **Reveal in Finder/Explorer** sobre cualquier efecto de Wire para localizar la carpeta de efectos del usuario. También puedes arrastrar cada `.cwired` a Resolume.
-3. Copia ambos `.cwired` en esa carpeta y reinicia Resolume si no aparecen inmediatamente.
+3. Copia los `.cwired` en esa carpeta y reinicia Resolume si no aparecen inmediatamente.
 4. Busca los efectos por sus nombres completos y aplícalos a un clip, una capa o la composición.
 
 Los `.cwired` contienen los recursos necesarios. No es necesario copiar por separado la carpeta `Resource` para usarlos. Esa carpeta sí debe permanecer junto al `.wire` cuando se edita el proyecto en Wire.
@@ -26,7 +27,7 @@ Los `.cwired` contienen los recursos necesarios. No es necesario copiar por sepa
 
 ### Cadena de efectos
 
-Ambos efectos procesan una imagen o video de entrada; no generan una composición completa por sí solos. Una cadena inicial recomendable es:
+Los efectos procesan una imagen o video de entrada. Para combinar Visión Psicodélica y Ondas de Agua, usa esta cadena:
 
 ```text
 Clip o capa con video
